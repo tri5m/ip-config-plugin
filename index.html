@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>我的IP</title>
+    <style type="text/css">
+        .are {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding-left: 5%;
+            width: 90%;
+        }
+
+        .ip_line {
+            display: inline-block;
+        }
+
+        label.ip_line {
+            color: cadetblue;
+        }
+
+        .ip_line.des {
+            color: rgb(166, 166, 171);
+            font-size: 0.7rem;
+            margin-left: 20px;
+        }
+
+        .ip {
+            width: 150px;
+        }
+        @media (prefers-color-scheme: light) {
+            .ip {
+                color: black;
+            }
+            #address {
+                color: black;
+            }
+        }
+        @media (prefers-color-scheme: dark) {
+            .ip {
+                color: white;
+            }
+            #address {
+                color: white;
+            }
+        }
+        @media (prefers-color-scheme: no-preference) {
+            .ip {
+                color: white;
+            }
+            #address {
+                color: black;
+            }
+        }
+
+
+        button.ip_line {
+            border: 0;
+            border-radius: 5px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        button.ip_line:hover {
+            background: darkcyan;
+        }
+
+        .other {
+            font-size: 0.9rem;
+            width: 90%;
+            margin-left: 5%;
+            color: #606160;
+        }
+
+        .other ul {
+            background-color: #f1f1f1;
+        }
+        .net_list {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="are">
+    <label class="ip_line">局域网:</label>
+    <div class="ip_line ip" id="lanIpv4"></div>
+    <button class="ip_line" onclick="copyLan()">点击复制</button>
+</div>
+
+<div class="are">
+    <label class="ip_line">广域网:</label>
+    <div class="ip_line ip" id="wanIpv4"></div>
+    <button class="ip_line" onclick="copyWan()">点击复制</button>
+    <div class="ip_line des">数据来源pv.sohu.com</div>
+</div>
+
+<div class="are">
+    <label class="ip_line">城&nbsp;&nbsp;&nbsp;市:</label>
+    <div class="ip_line" id="address"></div>
+</div>
+
+<div class="other" id="other">
+    <label>其他网卡信息:</label>
+</div>
+</body>
+
+<script type="text/javascript">
+    console.log(window.lanIPv4())
+
+    document.getElementById("lanIpv4").innerText = window.lanIPv4();
+
+    window.wanIPv4(function (body) {
+
+        // var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
+
+        console.log(body)
+        body = body.substring(body.indexOf("{"), body.length);
+        console.log(body)
+        let bodyObj = new Function('return ' + body)();
+        document.getElementById("wanIpv4").innerText = bodyObj.cip;
+        document.getElementById("address").innerText = bodyObj.cname;
+    }, function (error) {
+        console.error(error)
+    })
+
+    window.netInfo(function (name, obj) {
+
+        let ul = document.createElement("ul");
+        createLi(ul, `名称：${name}`);
+        createLi(ul, `地址：${obj.address}`);
+        createLi(ul, `掩码：${obj.netmask}`);
+        createLi(ul, `物理地址：${obj.mac}`);
+        createLi(ul, `协议族：${obj.family}`);
+        document.getElementById("other").appendChild(ul);
+    })
+
+    function createLi(ul, text) {
+        let li = document.createElement("li");
+        li.setAttribute("class", "net_list")
+        li.innerText = text;
+        ul.appendChild(li);
+    }
+
+    function copyLan() {
+        utools.copyText(document.getElementById("lanIpv4").innerText);
+    }
+
+    function copyWan() {
+        utools.copyText(document.getElementById("wanIpv4").innerText);
+    }
+</script>
+</html>
