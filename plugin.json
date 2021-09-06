@@ -6,7 +6,7 @@
     {
       "code": "ip",
       "explain": "获取内网公网和内网ip",
-      "cmds":["ip","ifconfig"],
+      "cmds":["ip","ifconfig","ipconfig"],
       "platform": ["win32", "darwin"]
     }
   ]

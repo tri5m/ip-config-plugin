@@ -107,22 +107,19 @@
 </body>
 
 <script type="text/javascript">
-    console.log(window.lanIPv4())
-
     document.getElementById("lanIpv4").innerText = window.lanIPv4();
 
     window.wanIPv4(function (body) {
 
         // var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
 
-        console.log(body)
         body = body.substring(body.indexOf("{"), body.length);
-        console.log(body)
         let bodyObj = new Function('return ' + body)();
         document.getElementById("wanIpv4").innerText = bodyObj.cip;
         document.getElementById("address").innerText = bodyObj.cname;
     }, function (error) {
-        console.error(error)
+        document.getElementById("wanIpv4").innerText = error;
+        console.error(error);
     })
 
     window.netInfo(function (name, obj) {

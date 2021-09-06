@@ -1,5 +1,4 @@
 const os = require("os");
-const request = require("request");
 
 const interfaces = os.networkInterfaces();
 
@@ -29,13 +28,16 @@ window.lanIPv4 = function () {
 
 window.wanIPv4 = function (success, fail) {
     // http://pv.sohu.com/cityjson?ie=utf-8
-    request('http://pv.sohu.com/cityjson?ie=utf-8', function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            success(body);
-        } else {
-            fail(error);
+    let ajax = new XMLHttpRequest();
+    ajax.open('get','http://pv.sohu.com/cityjson?ie=utf-8');
+    ajax.send();
+    ajax.onreadystatechange = function () {
+        if (ajax.readyState==4 &&ajax.status==200) {
+            success(ajax.responseText);
+        }else{
+            fail("网络出错啦。");
         }
-    });
+    }
 }
 
 window.netInfo = function (success) {
