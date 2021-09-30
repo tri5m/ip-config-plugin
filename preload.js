@@ -2,26 +2,26 @@ const os = require("os");
 
 const interfaces = os.networkInterfaces();
 
-let lanIpv4 = '';
-if (utools.isMacOs()) {
-    for (let i = 0; i < interfaces.en0.length; i++) {
-        if (interfaces.en0[i].family == 'IPv4') {
-            lanIpv4 = interfaces.en0[i].address;
+window.lanIPv4 = function () {
+
+    let lanIpv4 = '';
+    if (utools.isMacOs()) {
+        for (let i = 0; i < interfaces.en0.length; i++) {
+            if (interfaces.en0[i].family == 'IPv4') {
+                lanIpv4 = interfaces.en0[i].address;
+            }
         }
-    }
-} else if (utools.isWindows()) {
-    for (let devName in interfaces) {
-        let iface = interfaces[devName];
-        for (let i = 0; i < iface.length; i++) {
-            let alias = iface[i];
-            if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-                lanIpv4 = alias.address;
+    } else if (utools.isWindows()) {
+        for (let devName in interfaces) {
+            let iface = interfaces[devName];
+            for (let i = 0; i < iface.length; i++) {
+                let alias = iface[i];
+                if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+                    lanIpv4 = alias.address;
+                }
             }
         }
     }
-}
-
-window.lanIPv4 = function () {
 
     return lanIpv4;
 }
