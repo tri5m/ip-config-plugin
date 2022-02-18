@@ -57,9 +57,10 @@
         }
 
         @media (prefers-color-scheme: dark) {
-            html{
+            html {
                 background: #363A3A;
             }
+
             .ip {
                 color: white;
             }
@@ -159,16 +160,14 @@
 <script type="text/javascript">
 
     utools.onPluginEnter(({code, type, payload}) => {
-        document.getElementById("lanIpv4").innerText = window.lanIPv4();
-
-        window.wanIPv4(function (body) {
-
-            // var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
-
-            body = body.substring(body.indexOf("{"), body.length);
-            let bodyObj = new Function('return ' + body)();
-            document.getElementById("wanIpv4").innerText = bodyObj.cip;
-            document.getElementById("address").innerText = bodyObj.cname;
+        window.lanIPv4(function (ip) {
+            utools.copyText(ip);
+            utools.showNotification("已复制到剪贴板:" + ip);
+            document.getElementById("lanIpv4").innerText = ip;
+        });
+        window.wanIPv4(function (ip, cname) {
+            document.getElementById("wanIpv4").innerText = ip;
+            document.getElementById("address").innerText = cname;
         }, function (error) {
             document.getElementById("wanIpv4").innerText = error;
             console.error(error);
