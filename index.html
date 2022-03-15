@@ -140,6 +140,7 @@
     <label class="ip_line">局域网:</label>
     <div class="ip_line ip" id="lanIpv4"></div>
     <button class="ip_line" onclick="copyLan()">点击复制</button>
+    <div id="is_copy" class="ip_line des"></div>
 </div>
 <div class="are">
     <label class="ip_line">广域网:</label>
@@ -162,7 +163,7 @@
     utools.onPluginEnter(({code, type, payload}) => {
         window.lanIPv4(function (ip) {
             utools.copyText(ip);
-            utools.showNotification("已复制到剪贴板:" + ip);
+            document.getElementById("is_copy").innerText = "已自动复制到剪贴板";
             document.getElementById("lanIpv4").innerText = ip;
         });
         window.wanIPv4(function (ip, cname) {
@@ -194,6 +195,7 @@
 
     function copyLan() {
         utools.copyText(document.getElementById("lanIpv4").innerText);
+        document.getElementById("is_copy").innerText = "复制成功";
     }
 
     function copyWan() {
