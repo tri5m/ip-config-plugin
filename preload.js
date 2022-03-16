@@ -4,14 +4,17 @@ const internalIp = require('internal-ip');
 
 const interfaces = os.networkInterfaces();
 
+const {Navigator} = require("node-navigator");
+const mode_navigator = new Navigator();
+
 /**
  * 获取局域网ip地址，如果获取不到就从本地网卡进行推断
  * @param success success(ip)
  */
-window.lanIPv4 = function (success) {
+window.lanIPv4 = async function (success) {
     internalIp.v4().then(ip => {
         if (ip != undefined) {
-            success(ip)
+            success(ip);
         } else {
             success(localIpInfer());
         }
@@ -55,23 +58,61 @@ function localIpInfer() {
  */
 window.wanIPv4 = function (success, fail) {
     // http://pv.sohu.com/cityjson?ie=utf-8
-    let ajax = new XMLHttpRequest();
-    ajax.timeout = 3000;
-    ajax.open('get', 'http://pv.sohu.com/cityjson?ie=utf-8');
-    ajax.send();
-    ajax.onreadystatechange = function () {
-        if (ajax.readyState == 4 && ajax.status == 200) {
-            // var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
-            let body = ajax.responseText;
-            body = body.substring(body.indexOf("{"), body.length);
+    fetch('http://pv.sohu.com/cityjson?ie=utf-8').then(response => {
+        // 返回字符串: var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
+        response.text().then(data => {
+            let body = data.substring(data.indexOf("{"), data.length);
             let bodyObj = new Function('return ' + body)();
             success(bodyObj.cip, bodyObj.cname);
-        }
-        if (ajax.readyState == 4 && ajax.status != 200) {
-            console.log("从DNS获取")
-            publicIp.v4({timeout: 3000}).then(ip => success(ip, "未知"))
-                .catch(err => fail("网络出错啦!"));
-        }
+        }).catch(reason => console.error(reason));
+
+    }).catch(data => {
+        console.error(data)
+        console.log("从DNS获取")
+        publicIp.v4({timeout: 3000}).then(ip => success(ip, "未知"))
+            .catch(err => fail("网络出错啦!"));
+    });
+}
+
+/**
+ * 获取用户的位置
+ * @param success
+ * @param fail
+ */
+window.locationInfo = function (success, fail) {
+    if (mode_navigator.geolocation) {
+        // 从操作系统获取用户位置信息
+        mode_navigator.geolocation.getCurrentPosition((loc, error) => {
+            if (error) {
+                console.error(error);
+                fail(error.message);
+            } else {
+                var url = "http://api.map.baidu.com/geocoder?location="
+                    + loc.latitude + "," + loc.longitude + "&output=json";
+                fetch(url).then(response => {
+                    if (response.ok) {
+                        response.json().then(bodyObj => {
+                            if (bodyObj.status == "OK") {
+                                success(bodyObj.result.formatted_address);
+                            } else {
+                                fail("无法获取地址信息")
+                            }
+                        }).catch(reason => console.error(reason));
+                    } else {
+                        response.text().then((body) => {
+                            console.error(body);
+                            fail(body);
+                        }).catch(reason => console.error(reason));
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    fail("无法获取地址信息");
+                });
+            }
+        });
+    } else {
+        console.error("不支持定位");
+        fail("不支持定位");
     }
 }
 
@@ -83,4 +124,4 @@ window.netInfo = function (success) {
             success(nw, obj);
         });
     }
-}
+};

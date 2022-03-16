@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "internal-ip": "^6.2.0",
+    "node-navigator": "^1.0.1",
     "public-ip": "^4.0.4"
   },
   "author": "",

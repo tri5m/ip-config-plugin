@@ -146,7 +146,7 @@
     <label class="ip_line">广域网:</label>
     <div class="ip_line ip" id="wanIpv4"></div>
     <button class="ip_line" onclick="copyWan()">点击复制</button>
-    <div class="ip_line des">数据来源pv.sohu.com</div>
+    <div class="ip_line des"></div>
 </div>
 <div class="are">
     <label class="ip_line">城&nbsp;&nbsp;&nbsp;市:</label>
@@ -161,20 +161,33 @@
 <script type="text/javascript">
 
     utools.onPluginEnter(({code, type, payload}) => {
-        window.lanIPv4(function (ip) {
+
+        // 获取内网地址
+        window.lanIPv4((ip) => {
             utools.copyText(ip);
             document.getElementById("is_copy").innerText = "已自动复制到剪贴板";
             document.getElementById("lanIpv4").innerText = ip;
         });
-        window.wanIPv4(function (ip, cname) {
+        // 获取地理信息
+        window.locationInfo((address) => {
+            document.getElementById("address").innerText = address;
+        }, function (error) {
+            console.error(error);
+        });
+        // 获取外网地址
+        window.wanIPv4((ip, cname) => {
             document.getElementById("wanIpv4").innerText = ip;
-            document.getElementById("address").innerText = cname;
+            let addr = document.getElementById("address").innerText;
+            // 获取地理信息的优先级比较大
+            if(addr === ""){
+                document.getElementById("address").innerText = cname;
+            }
         }, function (error) {
             document.getElementById("wanIpv4").innerText = error;
             console.error(error);
-        })
+        });
 
-        window.netInfo(function (name, obj) {
+        window.netInfo((name, obj) => {
 
             let ul = document.createElement("ul");
             createLi(ul, `名称：${name}`);
