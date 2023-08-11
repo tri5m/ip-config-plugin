@@ -57,21 +57,48 @@ function localIpInfer() {
  * @param fail fail(errorMessage)
  */
 window.wanIPv4 = function (success, fail) {
-    // http://pv.sohu.com/cityjson?ie=utf-8
-    fetch('http://pv.sohu.com/cityjson?ie=utf-8').then(response => {
-        // 返回字符串: var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
-        response.text().then(data => {
-            let body = data.substring(data.indexOf("{"), data.length);
-            let bodyObj = new Function('return ' + body)();
-            success(bodyObj.cip, bodyObj.cname);
-        }).catch(reason => console.error(reason));
 
-    }).catch(data => {
-        console.error(data)
+    let fetchFromDns = () => {
         console.log("从DNS获取")
         publicIp.v4({timeout: 3000}).then(ip => success(ip, "未知"))
             .catch(err => fail("网络出错啦!"));
+    }
+
+    fetch('https://ipinfo.io', {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "curl/8.1.2"
+        }
+    }).then(response => {
+        response.json().then(data => {
+            // console.log(data)
+            success(data.ip, data.country + "," + data.city + "," + data.region)
+        }).catch(reason => {
+            console.error(reason)
+            fetchFromDns();
+        });
+    }).catch(data => {
+        console.error(data)
+        fetchFromDns();
     });
+
+    // http://pv.sohu.com/cityjson?ie=utf-8
+    // fetch('http://pv.sohu.com/cityjson?ie=utf-8').then(response => {
+    //     // 返回字符串: var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
+    //     response.text().then(data => {
+    //         let body = data.substring(data.indexOf("{"), data.length);
+    //         let bodyObj = new Function('return ' + body)();
+    //         success(bodyObj.cip, bodyObj.cname);
+    //     }).catch(reason => console.error(reason));
+    //
+    // }).catch(data => {
+    //     console.error(data)
+    //     console.log("从DNS获取")
+    //     publicIp.v4({timeout: 3000}).then(ip => success(ip, "未知"))
+    //         .catch(err => fail("网络出错啦!"));
+    // });
 }
 
 /**
@@ -121,7 +148,18 @@ window.netInfo = function (success) {
     for (let nw in networksObj) {
         let objArr = networksObj[nw];
         objArr.forEach((obj, idx, arr) => {
-            success(nw, obj);
+            if (nw.startsWith('lo')
+                || nw.startsWith('utun')
+                || nw.startsWith('llw')
+                || nw.startsWith('bridge')
+                || nw.startsWith('gif')
+                || nw.startsWith('stf')
+                || nw.startsWith('ap')
+                || nw.startsWith('awdl')) {
+
+            } else {
+                success(nw, obj);
+            }
         });
     }
 };

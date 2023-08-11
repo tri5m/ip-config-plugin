@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>我的IP</title>
-    <style type="text/css">
+    <style>
         .are {
             display: block;
             height: 30px;
@@ -38,6 +38,10 @@
             margin-left: 5%;
         }
 
+        #ip_addr {
+            margin-left: 5%;
+        }
+
         @media (prefers-color-scheme: light) {
             .ip {
                 color: black;
@@ -52,6 +56,10 @@
             }
 
             #address {
+                color: black;
+            }
+
+            #ip_addr {
                 color: black;
             }
         }
@@ -76,6 +84,10 @@
             #address {
                 color: white;
             }
+
+            #ip_addr {
+                color: white;
+            }
         }
 
         @media (prefers-color-scheme: no-preference) {
@@ -92,6 +104,10 @@
             }
 
             #address {
+                color: black;
+            }
+
+            #ip_addr {
                 color: black;
             }
         }
@@ -128,10 +144,6 @@
             margin: 0.2rem 0 0;
             border-radius: 5px;
         }
-
-        .net_list {
-            list-style: none;
-        }
     </style>
 </head>
 <body>
@@ -149,7 +161,11 @@
     <div class="ip_line des"></div>
 </div>
 <div class="are">
-    <label class="ip_line">城&nbsp;&nbsp;&nbsp;市:</label>
+    <label class="ip_line">IP地域:</label>
+    <div class="ip_line" id="ip_addr"></div>
+</div>
+<div class="are">
+    <label class="ip_line">位&nbsp;&nbsp;&nbsp;置:</label>
     <div class="ip_line" id="address"></div>
 </div>
 
@@ -177,6 +193,7 @@
         // 获取外网地址
         window.wanIPv4((ip, cname) => {
             document.getElementById("wanIpv4").innerText = ip;
+            document.getElementById("ip_addr").innerText = cname;
             let addr = document.getElementById("address").innerText;
             // 获取地理信息的优先级比较大
             if(addr === ""){
