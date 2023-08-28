@@ -3,174 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <title>我的IP</title>
+    <link rel="stylesheet" href="components/message_ui.css">
     <style>
-        .are {
-            display: block;
-            height: 30px;
-            margin-left: 5%;
-            padding-top: 1%;
+        table {
+            border-collapse: collapse;
             width: 90%;
-            border-bottom: #dadada;
-            border-bottom-width: 1px;
-            border-bottom-style: dashed;
+            margin-left: 5%;
+            height: 300px;
+            border-radius: 10%;
         }
 
-        .ip_line {
-            display: inline-block;
+        tr {
+            border-bottom: 1px solid #bdbdbd;
+            height: 30px;
         }
 
-        label.ip_line {
-            color: cadetblue;
+        tr td {
+            width: 24%;
         }
 
-        .ip_line.des {
-            color: rgb(166, 166, 171);
-            font-size: 0.7rem;
-            margin-left: 20px;
+        .cont {
+            border: 1px solid #bdbdbd;
+            width: 80%;
+            margin-left: 10%;
+            border-radius: .25rem;
+            box-shadow: 0 4px 6px -1px #0000001a, 0 2px 4px -1px #0000000f;
         }
 
         .ip {
-            width: 35%;
-            margin-left: 5%;
+            width: 20%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
         }
 
-        #address {
-            margin-left: 5%;
+        .ip span {
+            margin-left: 5px;
         }
 
-        #ip_addr {
-            margin-left: 5%;
+        .lab {
+            padding-left: 15px;
+            font-size: large;
+            font-weight: 400;
+            width: 10%;
         }
 
-        @media (prefers-color-scheme: light) {
-            .ip {
-                color: black;
-            }
-
-            .other {
-                color: #818384;
-            }
-
-            .other ul {
-                background-color: #f1f1f1;
-            }
-
-            #address {
-                color: black;
-            }
-
-            #ip_addr {
-                color: black;
-            }
+        .lab {
+            color: #000000;
         }
 
-        @media (prefers-color-scheme: dark) {
-            html {
-                background: #363A3A;
-            }
-
-            .ip {
-                color: white;
-            }
-
-            .other {
-                color: #b7b7b7;
-            }
-
-            .other ul {
-                background-color: #292929;
-            }
-
-            #address {
-                color: white;
-            }
-
-            #ip_addr {
-                color: white;
-            }
+        .des {
+            color: cadetblue;
         }
 
-        @media (prefers-color-scheme: no-preference) {
-            .ip {
-                color: black;
-            }
-
-            .other {
-                color: #818384;
-            }
-
-            .other ul {
-                background-color: #f1f1f1;
-            }
-
-            #address {
-                color: black;
-            }
-
-            #ip_addr {
-                color: black;
-            }
-        }
-
-
-        button.ip_line {
-            border: 0;
-            border-radius: 4px;
-            height: 20px;
+        .copy {
+            background-image: url('copy.svg');
+            background-repeat: no-repeat;
+            padding-left: 20px;
             cursor: pointer;
         }
 
-        button.ip_line:hover {
-            background: #12dddd;
+        .speed_test_cont {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-evenly;
+            align-items: center;
         }
 
-        .other {
-            font-size: 0.95rem;
-            width: 90%;
-            margin-left: 5%;
-            padding-top: 10px;
+        .stc_item {
+            width: 10rem;
+            border: 1px solid #e4e4e4;
+            box-shadow: 0 4px 6px -1px #0000001a, 0 2px 4px -1px #0000000f;
         }
 
-        .other label {
-            color: #c0c3c6;
+        .st_title {
+            width: 100%;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 400;
         }
 
-        .other li {
-            margin-left: 2%;
+        .st_des {
+            width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #a2a2a2;
         }
 
-        .other ul {
-            padding: 0.8rem;
-            margin: 0.2rem 0 0;
-            border-radius: 5px;
+        .st_time {
+            width: 100%;
+            text-align: center;
+            font-size: 1.10rem;
+            color: #009800cc;
+        }
+
+        .speed_test_cont hr {
+            width: 80%;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .ip {
+                color: #c6c6c6;
+            }
+            .lab {
+                color: #7d7d7d;
+            }
+            #loc {
+                color: #7d7d7d;
+            }
+            .st_title {
+                color: #40a7b1;
+            }
         }
     </style>
 </head>
 <body>
+<div class="cont">
+    <table>
+        <tbody>
+        <tr>
+            <td class="lab">内网</td>
+            <td class="ip">
+                <span id="lanIpv4">0.0.0.0</span>&nbsp;
+                <span class="copy" onclick="copyLan()" title="复制"></span></td>
+            <td class="des">已复制到剪贴板</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lab">公网</td>
+            <td class="ip">
+                <span id="ip_1">0.0.0.0</span>&nbsp;
+                <span class="copy" onclick="copyIp1()" title="复制"></span>
+            </td>
+            <td class="des"><span id="address1"></span></td>
+            <td class="des"><span id="net_str1"></span></td>
+        </tr>
+        <tr>
+            <td class="lab">代理</td>
+            <td class="ip">
+                <span id="ip_2">0.0.0.0</span>&nbsp;
+                <span class="copy" onclick="copyIp2()" title="复制"></span>
+            </td>
+            <td class="des"><span id="address2"></span></td>
+            <td class="des"><span id="net_str2"></span></td>
+        </tr>
+        <tr style="border: none">
+            <td class="lab">定位</td>
+            <td id="loc" colspan="2">定位中...</td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="cont" style="margin-top: 15px">
+    <div class="speed_test_cont" id="speed_test_cont"></div>
+</div>
 
-<div class="are">
-    <label class="ip_line">局域网:</label>
-    <div class="ip_line ip" id="lanIpv4"></div>
-    <button class="ip_line" onclick="copyLan()">点击复制</button>
-    <div id="is_copy" class="ip_line des"></div>
-</div>
-<div class="are">
-    <label class="ip_line">广域网:</label>
-    <div class="ip_line ip" id="wanIpv4"></div>
-    <button class="ip_line" onclick="copyWan()">点击复制</button>
-    <div class="ip_line des"></div>
-</div>
-<div class="are">
-    <label class="ip_line">IP地域:</label>
-    <div class="ip_line" id="ip_addr"></div>
-</div>
-<div class="are">
-    <label class="ip_line">位&nbsp;&nbsp;&nbsp;置:</label>
-    <div class="ip_line" id="address"></div>
-</div>
-
-<div class="other" id="other">
-    <label>其他网卡信息:</label>
+<div class="parent-tips" style="display: block; z-index: 1113;">
+    <div class="global-msg-tips info">
+    </div>
 </div>
 </body>
 
@@ -180,56 +171,127 @@
 
         // 获取内网地址
         window.lanIPv4((ip) => {
-            utools.copyText(ip);
-            document.getElementById("is_copy").innerText = "已自动复制到剪贴板";
             document.getElementById("lanIpv4").innerText = ip;
+            utools.copyText(ip);
         });
+
         // 获取地理信息
         window.locationInfo((address) => {
-            document.getElementById("address").innerText = address;
+            document.getElementById("loc").innerText = address;
         }, function (error) {
             console.error(error);
         });
-        // 获取外网地址
-        window.wanIPv4((ip, cname) => {
-            document.getElementById("wanIpv4").innerText = ip;
-            document.getElementById("ip_addr").innerText = cname;
-            let addr = document.getElementById("address").innerText;
-            // 获取地理信息的优先级比较大
-            if(addr === ""){
-                document.getElementById("address").innerText = cname;
-            }
+
+        // 获取外网地址1
+        window.wan_no_proxy((data) => {
+            document.getElementById("ip_1").innerText = data.ip;
+            document.getElementById("address1").innerText = data.addr;
+            document.getElementById("net_str1").innerText = data.net_str;
         }, function (error) {
-            document.getElementById("wanIpv4").innerText = error;
+            document.getElementById("ip_1").innerText = error;
             console.error(error);
         });
 
-        window.netInfo((name, obj) => {
+        // 获取外网地址2
+        window.wan_has_proxy((data) => {
+            document.getElementById("ip_2").innerText = data.ip;
+            document.getElementById("address2").innerText = data.addr;
+            document.getElementById("net_str2").innerText = data.net_str;
+        }, function (error) {
+            document.getElementById("ip_2").innerText = error;
+            console.error(error);
+        });
 
-            let ul = document.createElement("ul");
-            createLi(ul, `名称：${name}`);
-            createLi(ul, `地址：${obj.address}`);
-            createLi(ul, `掩码：${obj.netmask}`);
-            createLi(ul, `物理地址：${obj.mac}`);
-            createLi(ul, `协议族：${obj.family}`);
-            document.getElementById("other").appendChild(ul);
-        })
+        // 开始测速组件
+        let array = [{
+            url: "https://www.baidu.com",
+            name: "百度搜索",
+            des: "境内网站",
+            id: "1"
+        }, {
+            url: "https://music.163.com",
+            name: "网易云",
+            des: "境内网站",
+            id: "2"
+        }, {
+            url: "https://github.com",
+            name: "GitHub",
+            des: "境外网站",
+            id: "3"
+        }, {
+            url: "https://google.com",
+            name: "Google",
+            des: "境外网站",
+            id: "4"
+        }
+        ];
+        testNetDelay(array);
+
     })
 
-    function createLi(ul, text) {
-        let li = document.createElement("li");
-        li.setAttribute("class", "net_list")
-        li.innerText = text;
-        ul.appendChild(li);
-    }
-
     function copyLan() {
-        utools.copyText(document.getElementById("lanIpv4").innerText);
-        document.getElementById("is_copy").innerText = "复制成功";
+        utools.copyText(document.getElementById("lanIpv4").innerText)
+        showToast("复制成功", "success")
     }
 
-    function copyWan() {
-        utools.copyText(document.getElementById("wanIpv4").innerText);
+    function copyIp1() {
+        utools.copyText(document.getElementById("ip_2").innerText)
+        showToast("复制成功", "success")
+    }
+
+    function copyIp2() {
+        utools.copyText(document.getElementById("ip_2").innerText)
+        showToast("复制成功", "success")
+    }
+
+    // 测延迟
+    function testNetDelay(array) {
+
+        // 创建dom
+        array.forEach(e => {
+            // 创建div元素
+            let div = document.createElement("div");
+            div.classList.add("stc_item");
+
+            let pTitle = document.createElement("p");
+            pTitle.classList.add("st_title");
+            pTitle.innerText = e.name;
+
+            let pDes = document.createElement("p");
+            pDes.classList.add("st_des");
+            pDes.innerText = e.des;
+
+            let hr = document.createElement("hr");
+
+            let pTime = document.createElement("p");
+            pTime.innerText = "测速中...";
+            pTime.classList.add("st_time");
+            pTime.id = "st_time_item_" + e.id;
+
+            div.appendChild(pTitle);
+            div.appendChild(pDes);
+            div.appendChild(hr);
+            div.appendChild(pTime);
+            document.getElementById("speed_test_cont").appendChild(div);
+        });
+        let startTime = new Date().getTime();
+        array.forEach(function (element) {
+            fetch(element.url).then(function (response) {
+                let endTime = new Date().getTime();
+                let latency = endTime - startTime;
+                if (latency > 1000) {
+                    document.getElementById("st_time_item_" + element.id).style.color = "yellow";
+                }
+                if (latency > 3000) {
+                    document.getElementById("st_time_item_" + element.id).style.color = "red";
+                }
+                document.getElementById("st_time_item_" + element.id).innerText = latency + "ms"
+            }).catch(function (error) {
+                document.getElementById("st_time_item_" + element.id).innerText = "访问失败!";
+                document.getElementById("st_time_item_" + element.id).style.color = "red";
+            });
+        });
     }
 </script>
+<script type="application/javascript" src="components/message_ui.js"></script>
 </html>

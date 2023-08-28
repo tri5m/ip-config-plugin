@@ -52,16 +52,65 @@ function localIpInfer() {
 }
 
 /**
- * 获取 公网ip地址，先从pv.suhu获取，如果获取不到，就使用publicIp获取ip
+ * 获取 公网ip地址，不包含代理
  * @param success  success(ip,cityName)
  * @param fail fail(errorMessage)
  */
-window.wanIPv4 = function (success, fail) {
+window.wan_no_proxy = function (success, fail) {
 
     let fetchFromDns = () => {
         console.log("从DNS获取")
-        publicIp.v4({timeout: 3000}).then(ip => success(ip, "未知"))
-            .catch(err => fail("网络出错啦!"));
+        publicIp.v4({timeout: 3000}).then(ip => success({
+            ip: ip,
+            addr: "未知",
+            isp: "未知",
+            net_str: "未知"
+        })).catch(err => fail("网络出错啦!"));
+    }
+
+    // fetch('https://ipinfo.io', {
+    //  https://api.ip.sb/geoip
+    fetch('https://forge.speedtest.cn/api/location/info', {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "curl/8.1.2"
+        }
+    }).then(response => {
+        response.json().then(data => {
+            console.log(data)
+            success({
+                ip: data.ip,
+                addr: data.country + ' ' + data.province + ' ' + data.distinct,
+                isp: data.isp,
+                net_str: data.net_str
+            })
+        }).catch(reason => {
+            console.error(reason)
+            fetchFromDns();
+        });
+    }).catch(data => {
+        console.error(data)
+        fetchFromDns();
+    });
+}
+
+/**
+ * 公网Ip 包括代理
+ * @param success  success(ip,cityName)
+ * @param fail fail(errorMessage)
+ */
+window.wan_has_proxy = function (success, fail) {
+
+    let fetchFromDns = () => {
+        console.log("从DNS获取")
+        publicIp.v4({timeout: 3000}).then(ip => success({
+            ip: ip,
+            addr: "未知",
+            isp: "未知",
+            net_str: "未知"
+        })).catch(err => fail("网络出错啦!"));
     }
 
     fetch('https://ipinfo.io', {
@@ -73,8 +122,13 @@ window.wanIPv4 = function (success, fail) {
         }
     }).then(response => {
         response.json().then(data => {
-            // console.log(data)
-            success(data.ip, data.country + "," + data.city + "," + data.region)
+            console.log(data)
+            success({
+                ip: data.ip,
+                addr: data.country + ' ' + data.region + ' ' + data.city,
+                isp: data.org,
+                net_str: data.org
+            })
         }).catch(reason => {
             console.error(reason)
             fetchFromDns();
@@ -83,22 +137,6 @@ window.wanIPv4 = function (success, fail) {
         console.error(data)
         fetchFromDns();
     });
-
-    // http://pv.sohu.com/cityjson?ie=utf-8
-    // fetch('http://pv.sohu.com/cityjson?ie=utf-8').then(response => {
-    //     // 返回字符串: var returnCitySN = {"cip": "114.88.158.85", "cid": "310000", "cname": "上海市"};
-    //     response.text().then(data => {
-    //         let body = data.substring(data.indexOf("{"), data.length);
-    //         let bodyObj = new Function('return ' + body)();
-    //         success(bodyObj.cip, bodyObj.cname);
-    //     }).catch(reason => console.error(reason));
-    //
-    // }).catch(data => {
-    //     console.error(data)
-    //     console.log("从DNS获取")
-    //     publicIp.v4({timeout: 3000}).then(ip => success(ip, "未知"))
-    //         .catch(err => fail("网络出错啦!"));
-    // });
 }
 
 /**
@@ -142,24 +180,3 @@ window.locationInfo = function (success, fail) {
         fail("不支持定位");
     }
 }
-
-window.netInfo = function (success) {
-    const networksObj = os.networkInterfaces();
-    for (let nw in networksObj) {
-        let objArr = networksObj[nw];
-        objArr.forEach((obj, idx, arr) => {
-            if (nw.startsWith('lo')
-                || nw.startsWith('utun')
-                || nw.startsWith('llw')
-                || nw.startsWith('bridge')
-                || nw.startsWith('gif')
-                || nw.startsWith('stf')
-                || nw.startsWith('ap')
-                || nw.startsWith('awdl')) {
-
-            } else {
-                success(nw, obj);
-            }
-        });
-    }
-};
