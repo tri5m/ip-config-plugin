@@ -63,17 +63,18 @@
 
         .speed_test_cont {
             margin-top: 20px;
-            margin-bottom: 20px;
             display: flex;
-            flex-flow: row nowrap;
+            flex-flow: row wrap;
             justify-content: space-evenly;
-            align-items: center;
+            align-items: stretch;
+            flex-wrap: wrap;
         }
 
         .stc_item {
-            width: 10rem;
+            flex-basis: calc(100% / 5);
             border: 1px solid #e4e4e4;
             box-shadow: 0 4px 6px -1px #0000001a, 0 2px 4px -1px #0000000f;
+            margin-bottom: 1.2rem;
         }
 
         .st_title {
@@ -223,6 +224,26 @@
             name: "Google",
             des: "境外网站",
             id: "4"
+        }, {
+            url: "https://www.aliyun.com",
+            name: "阿里云",
+            des: "境内网站",
+            id: "5"
+        }, {
+            url: "https://cloud.tencent.com",
+            name: "腾讯云",
+            des: "境内网站",
+            id: "6"
+        }, {
+            url: "https://youtube.com",
+            name: "Youtube",
+            des: "境外网站",
+            id: "7"
+        }, {
+            url: "https://www.amazon.com",
+            name: "亚马逊",
+            des: "境外网站",
+            id: "8"
         }
         ];
         testNetDelay(array);
@@ -246,7 +267,7 @@
 
     // 测延迟
     function testNetDelay(array) {
-
+        document.getElementById("speed_test_cont").innerHTML = "";
         // 创建dom
         array.forEach(e => {
             // 创建div元素
