@@ -69,7 +69,8 @@ window.wan_no_proxy = function (success, fail) {
     }
 
     // fetch('https://ipinfo.io', {
-    //  https://api.ip.sb/geoip
+    // https://api.ip.sb/geoip
+    // https://pro.ip-api.com/json?fields=16985625&key=EEKS6bLi6D91G1p
     fetch('https://forge.speedtest.cn/api/location/info', {
         method: "GET",
         headers: {

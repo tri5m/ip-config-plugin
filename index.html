@@ -102,6 +102,25 @@
             width: 80%;
         }
 
+        .dns_info_cont {
+            margin-top: 10px;
+            height: 10rem;
+        }
+
+        .dic_title {
+            width: 20%;
+            font-weight: 500;
+            color: darkcyan;
+        }
+        .dic_ip {
+            width: 30%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+        }
+        .dic_geo {
+            width: 50%;
+            color: #6b7280;
+        }
+
         @media (prefers-color-scheme: dark) {
             .ip {
                 color: #c6c6c6;
@@ -115,10 +134,17 @@
             .st_title {
                 color: #40a7b1;
             }
+            .dic_ip {
+                color: #c6c6c6;
+            }
+            .dic_geo {
+                color: #7d7d7d;
+            }
         }
     </style>
 </head>
 <body>
+
 <div class="cont">
     <table>
         <tbody>
@@ -149,16 +175,25 @@
             <td class="des"><span id="net_str2"></span></td>
         </tr>
         <tr style="border: none">
-            <td class="lab">定位</td>
+            <td class="lab">位置</td>
             <td id="loc" colspan="2">定位中...</td>
             <td></td>
         </tr>
         </tbody>
     </table>
 </div>
+
 <div class="cont" style="margin-top: 15px">
     <div class="speed_test_cont" id="speed_test_cont"></div>
 </div>
+
+<div class="cont" style="margin-top: 15px">
+    <table class="dns_info_cont" id="dns_info_cont">
+
+    </table>
+</div>
+
+
 
 <div class="parent-tips" style="display: block; z-index: 1113;">
     <div class="global-msg-tips info">
@@ -248,6 +283,8 @@
         ];
         testNetDelay(array);
 
+        // DNS出口查询
+        dnsExitQuery();
     })
 
     function copyLan() {
@@ -297,21 +334,72 @@
         });
         let startTime = new Date().getTime();
         array.forEach(function (element) {
-            fetch(element.url).then(function (response) {
+            fetch(element.url).then(r => {
                 let endTime = new Date().getTime();
                 let latency = endTime - startTime;
                 if (latency > 1000) {
-                    document.getElementById("st_time_item_" + element.id).style.color = "yellow";
+                    document.getElementById("st_time_item_" + element.id).style.color = "#95d91b";
                 }
                 if (latency > 3000) {
+                    document.getElementById("st_time_item_" + element.id).style.color = "#a1f803";
+                }
+                if (latency > 7000) {
                     document.getElementById("st_time_item_" + element.id).style.color = "red";
                 }
                 document.getElementById("st_time_item_" + element.id).innerText = latency + "ms"
             }).catch(function (error) {
-                document.getElementById("st_time_item_" + element.id).innerText = "访问失败!";
+                document.getElementById("st_time_item_" + element.id).innerText = "❌";
                 document.getElementById("st_time_item_" + element.id).style.color = "red";
+                console.error(error);
             });
         });
+    }
+
+    // DNS出口查询
+    function dnsExitQuery(){
+        document.getElementById("dns_info_cont").innerHTML = "";
+        for (let i = 0; i < 4; i++) {
+
+            fetch("https://"+generateRandomString(32)+".edns.ip-api.com/json?lang=zh-CN").then(response =>  {
+                console.log(response);
+                response.json().then((res) => {
+                    let tr = document.createElement("tr");
+                    let td1 = document.createElement("td");
+                    td1.className = "dic_title";
+                    td1.textContent = "DNS out";
+
+                    let td2 = document.createElement("td");
+                    td2.className = "dic_ip";
+                    td2.textContent = res.dns.ip;
+
+                    let td3 = document.createElement("td");
+                    td3.className = "dic_geo";
+                    td3.textContent = res.dns.geo;
+
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    tr.appendChild(td3);
+
+                    document.getElementById("dns_info_cont").appendChild(tr);
+                }).catch(e => {
+                    console.error(e);
+                });
+            }).catch(error => {
+                console.error(error);
+            });
+        }
+
+        function generateRandomString(length) {
+            let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+
+            for (let i = 0; i < length; i++) {
+                let randomIndex = Math.floor(Math.random() * characters.length);
+                result += characters.charAt(randomIndex);
+            }
+
+            return result;
+        }
     }
 </script>
 <script type="application/javascript" src="components/message_ui.js"></script>
