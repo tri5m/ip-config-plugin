@@ -1,0 +1,13 @@
+{
+  "main": "index.html",
+  "logo": "ip.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "ip",
+      "explain": "获取内网公网和内网ip",
+      "cmds":["ip","ifconfig","ipconfig"],
+      "platform": ["win32", "darwin", "linux"]
+    }
+  ]
+}

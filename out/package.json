@@ -1,11 +1,8 @@
 {
   "name": "ip_config_utools_plugin",
-  "pluginName": "ip-config",
-  "description": "查询本机的内外网ip地址和测速",
+  "description": "![](https://files.catbox.moe/sltg1n.png)",
   "version": "1.0.3",
-  "main": "index.html",
-  "logo": "ip.png",
-  "homePage": "",
+  "main": "preload.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +16,6 @@
     "node-navigator": "^1.0.1",
     "public-ip": "^4.0.4"
   },
-  "author": "Trifolium",
+  "author": "",
   "license": "MIT"
 }
