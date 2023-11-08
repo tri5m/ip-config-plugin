@@ -1,2 +1,3 @@
-### ip-config的utools插件，详情请查看utools官网
-![](https://files.catbox.moe/sltg1n.png)
+### ip-config的utools类似工具的插件
+#### 可以在utools或者rubick中使用
+![](https://files.catbox.moe/h4x01s.png)
