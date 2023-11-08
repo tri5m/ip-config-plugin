@@ -203,12 +203,12 @@
 
 <script type="text/javascript">
 
-    utools.onPluginEnter(({code, type, payload}) => {
+    rubick.onPluginEnter(({code, type, payload}) => {
 
         // 获取内网地址
         window.lanIPv4((ip) => {
             document.getElementById("lanIpv4").innerText = ip;
-            copyText.copyText(ip);
+            rubick.copyText(ip);
         });
 
         // 获取地理信息
@@ -288,17 +288,17 @@
     })
 
     function copyLan() {
-        copyText.copyText(document.getElementById("lanIpv4").innerText)
+        rubick.copyText(document.getElementById("lanIpv4").innerText)
         confetti();
     }
 
     function copyIp1() {
-        copyText.copyText(document.getElementById("ip_1").innerText)
+        rubick.copyText(document.getElementById("ip_1").innerText)
         confetti();
     }
 
     function copyIp2() {
-        copyText.copyText(document.getElementById("ip_2").innerText)
+        rubick.copyText(document.getElementById("ip_2").innerText)
         confetti();
     }
 
