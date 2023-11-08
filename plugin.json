@@ -1,6 +1,6 @@
 {
   "main": "index.html",
-  "logo": "ip.png",
+  "logo": "assets/ip.png",
   "preload": "preload.js",
   "features": [
     {
