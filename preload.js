@@ -30,7 +30,7 @@ window.lanIPv4 = async function (success) {
 function localIpInfer() {
     console.log("本地推断!")
     let lanIpv4 = '';
-    if (utools.isMacOs()) {
+    if (rubick.isMacOs() || rubick.isLinux()) {
         if (interfaces.en0 != undefined) {
             for (let i = 0; i < interfaces.en0.length; i++) {
                 if (interfaces.en0[i].family == 'IPv4') {
@@ -40,7 +40,7 @@ function localIpInfer() {
         } else {
             lanIpv4 = "无连接网络!"
         }
-    } else if (utools.isWindows()) {
+    } else if (rubick.isWindows()) {
         for (let devName in interfaces) {
             let iface = interfaces[devName];
             for (let i = 0; i < iface.length; i++) {

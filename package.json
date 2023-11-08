@@ -1,5 +1,5 @@
 {
-  "name": "ip_config_rubick_plugin",
+  "name": "ip-config-rubick-plugin",
   "pluginName": "ip-config",
   "description": "查询本机的内外网ip地址和测速",
   "version": "1.0.3",
