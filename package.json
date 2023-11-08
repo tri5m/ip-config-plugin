@@ -1,17 +1,15 @@
 {
-  "name": "ip_config_utools_plugin",
-  "pluginName": "ip-config",
+  "name": "ip-config-utools-plugin",
   "description": "查询本机的内外网ip地址和测速",
   "version": "1.0.3",
   "main": "index.html",
-  "logo": "ip.png",
-  "homePage": "",
+  "logo": "assets/ip.png",
   "scripts": {
     "build": "build.sh"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/wxd-admin/ip-config-utools-plugin.git"
+    "url": "https://github.com/trifolium-wang/ip-config-plugin"
   },
   "dependencies": {
     "canvas-confetti": "^1.6.0",
