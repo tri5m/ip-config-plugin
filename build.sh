@@ -1,5 +1,5 @@
 #!/bin/bash
-exclude_list=".gitignore out build.sh LICENSE README.md .git .idea"
+exclude_list=".gitignore out build.sh LICENSE README.md .git .idea .DS_Store .npm"
 rm -rf ./out
 mkdir -p ./out
 for file in *
