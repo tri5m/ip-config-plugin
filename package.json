@@ -2,7 +2,7 @@
   "name": "ip-config-rubick-plugin",
   "pluginName": "ip-config",
   "description": "查询本机的内外网ip地址和测速",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.html",
   "preload": "preload.js",
   "logo": "https://gitee.com/trifolium-wang/ip-config-plugin/raw/master/assets/ip.png",
