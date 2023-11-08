@@ -1,17 +1,31 @@
 {
-  "name": "ip_config_utools_plugin",
+  "name": "ip_config_rubick_plugin",
   "pluginName": "ip-config",
   "description": "查询本机的内外网ip地址和测速",
   "version": "1.0.3",
   "main": "index.html",
-  "logo": "ip.png",
-  "homePage": "",
+  "preload":"preload.js",
+  "logo": "assets/ip.png",
+  "pluginType": "ui",
+  "features": [
+    {
+      "code": "ip",
+      "explain": "查询本机的内外网ip",
+      "cmds":[
+        "ip",
+        "ipconfig",
+        "ifconfig",
+        "地址"
+      ]
+    }
+  ],
+  "homePage": "https://github.com/trifolium-wang/ip-config-plugin#readme",
   "scripts": {
     "build": "build.sh"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/wxd-admin/ip-config-utools-plugin.git"
+    "url": "https://github.com/trifolium-wang/ip-config-plugin"
   },
   "dependencies": {
     "canvas-confetti": "^1.6.0",
