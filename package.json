@@ -4,14 +4,14 @@
   "description": "查询本机的内外网ip地址和测速",
   "version": "1.0.3",
   "main": "index.html",
-  "preload":"preload.js",
-  "logo": "assets/ip.png",
+  "preload": "preload.js",
+  "logo": "https://gitee.com/trifolium-wang/ip-config-plugin/raw/master/assets/ip.png",
   "pluginType": "ui",
   "features": [
     {
       "code": "ip",
       "explain": "查询本机的内外网ip",
-      "cmds":[
+      "cmds": [
         "ip",
         "ipconfig",
         "ifconfig",
