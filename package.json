@@ -5,7 +5,7 @@
   "version": "1.0.4",
   "main": "index.html",
   "preload": "preload.js",
-  "logo": "https://gitee.com/trifolium-wang/ip-config-plugin/raw/master/assets/ip.png",
+  "logo": "https://gitee.com/tri5m/ip-config-plugin/raw/master/assets/ip.png",
   "pluginType": "ui",
   "features": [
     {
@@ -19,13 +19,13 @@
       ]
     }
   ],
-  "homePage": "https://github.com/trifolium-wang/ip-config-plugin#readme",
+  "homePage": "https://github.com/tri5m/ip-config-plugin#readme",
   "scripts": {
     "build": "build.sh"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/trifolium-wang/ip-config-plugin"
+    "url": "https://github.com/tri5m/ip-config-plugin"
   },
   "dependencies": {
     "canvas-confetti": "^1.6.0",
