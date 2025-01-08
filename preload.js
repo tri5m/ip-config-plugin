@@ -61,6 +61,96 @@ function localIpInfer() {
  */
 window.wan_no_proxy = function (success, fail) {
 
+    let fromBaidu = (tryFunction) => {
+        console.log("从百度查询国内ip")
+        fetch('https://qifu-api.baidubce.com/ip/local/geo/v1/district', {
+            method: "GET",
+            headers: {
+                "User-Agent": "curl/8.1.2"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.error(response);
+                tryFunction();
+            }
+            response.json().then(data => {
+                console.log(data)
+                return {
+                    ip: data.ip,
+                    addr: data.data.country + ' ' + data.data.prov + ' ' + data.data.city + ' ' + data.data.district,
+                    isp: data.data.owner,
+                    net_str: data.data.owner
+                }
+            }).catch(reason => {
+                tryFunction();
+                return false;
+            });
+        }).catch(data => {
+            tryFunction();
+            return false;
+        });
+    }
+
+    let fromIpcn = (tryFunction) => {
+        console.log("从ip.cn获取国内ip")
+        fetch('https://www.ip.cn/api/index?ip=&type=0', {
+            method: "GET",
+            headers: {
+                "User-Agent": "curl/8.1.2"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.error(response);
+                tryFunction();
+            }
+            response.json().then(data => {
+                console.log(data)
+                return {
+                    ip: data.ip,
+                    addr: data.address,
+                    isp: data.rs,
+                    net_str: data.isDomain
+                }
+            }).catch(reason => {
+                tryFunction();
+                return false;
+            });
+        }).catch(data => {
+            tryFunction();
+            return false;
+        });
+    }
+
+    let fromUseragetInfo = (tryFunction) => {
+        console.log("从ip.useragentinfo.com获取国内ip")
+        fetch('https://ip.useragentinfo.com/json', {
+            method: "GET",
+            headers: {
+                "User-Agent": "curl/8.1.2"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.error(response);
+                tryFunction();
+            }
+            response.json().then(data => {
+                console.log(data)
+                return {
+                    ip: data.ip,
+                    addr: data.province + ' ' + data.city + ' ' + data.district,
+                    isp: data.isp,
+                    net_str: data.short_name
+                }
+            }).catch(reason => {
+                tryFunction();
+                return false;
+            });
+        }).catch(data => {
+            tryFunction();
+            return false;
+        });
+    }
+
     let fetchFromDns = () => {
         console.log("从DNS获取")
         publicIp.v4({timeout: 3000}).then(ip => success({
@@ -71,33 +161,9 @@ window.wan_no_proxy = function (success, fail) {
         })).catch(err => fail("网络出错啦!"));
     }
 
-    // fetch('https://ipinfo.io', {
-    // https://api.ip.sb/geoip
-    // https://pro.ip-api.com/json?fields=16985625&key=EEKS6bLi6D91G1p
-    fetch('https://forge.speedtest.cn/api/location/info', {
-        method: "GET",
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "User-Agent": "curl/8.1.2"
-        }
-    }).then(response => {
-        response.json().then(data => {
-            console.log(data)
-            success({
-                ip: data.ip,
-                addr: data.country + ' ' + data.province + ' ' + data.distinct,
-                isp: data.isp,
-                net_str: data.net_str
-            })
-        }).catch(reason => {
-            console.error(reason)
-            fetchFromDns();
-        });
-    }).catch(data => {
-        console.error(data)
-        fetchFromDns();
-    });
+    // 优先级，百度，到ipcn到dns查询
+    fromBaidu(fromIpcn(fromUseragetInfo(fetchFromDns)));
+    
 }
 
 /**
@@ -107,6 +173,67 @@ window.wan_no_proxy = function (success, fail) {
  */
 window.wan_has_proxy = function (success, fail) {
 
+    let fromPing0 = (tryFunction) => {
+        console.log("从ping0获取")
+        fetch('https://ping0.cc/geo', {
+            method: "GET",
+            headers: {
+                "User-Agent": "curl/8.1.2"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                tryFunction();
+            }
+            response.text().then(data => {
+                console.log(data)
+                success({
+                    ip: data.split('n')[0],
+                    addr: data.split('n')[1],
+                    isp: data.split('n')[2],
+                    net_str: data.split('n')[3]
+                })
+            }).catch(reason => {
+                console.error(reason)
+                tryFunction();
+            });
+        }).catch(data => {
+            console.error(data)
+            tryFunction();
+        });
+    }
+
+    let fromIpInfo = (tryFunction) => {
+        console.log("从ipinfo获取")
+        fetch('https://ipinfo.io', {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "User-Agent": "curl/8.1.2"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.error(response);
+                tryFunction();
+            }
+            response.json().then(data => {
+                console.log(data)
+                return {
+                    ip: data.ip,
+                    addr: data.country + ' ' + data.region + ' ' + data.city,
+                    isp: data.org,
+                    net_str: data.org
+                }
+            }).catch(reason => {
+                tryFunction();
+                return false;
+            });
+        }).catch(data => {
+            tryFunction();
+            return false;
+        });
+    }
+
     let fetchFromDns = () => {
         console.log("从DNS获取")
         publicIp.v4({timeout: 3000}).then(ip => success({
@@ -117,30 +244,8 @@ window.wan_has_proxy = function (success, fail) {
         })).catch(err => fail("网络出错啦!"));
     }
 
-    fetch('https://ipinfo.io', {
-        method: "GET",
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "User-Agent": "curl/8.1.2"
-        }
-    }).then(response => {
-        response.json().then(data => {
-            console.log(data)
-            success({
-                ip: data.ip,
-                addr: data.country + ' ' + data.region + ' ' + data.city,
-                isp: data.org,
-                net_str: data.org
-            })
-        }).catch(reason => {
-            console.error(reason)
-            fetchFromDns();
-        });
-    }).catch(data => {
-        console.error(data)
-        fetchFromDns();
-    });
+    // 优先级从外面到里面进行查询
+    fromPing0(fromIpInfo(fetchFromDns()));
 }
 
 /**
@@ -189,20 +294,10 @@ window.locationInfo = function (success, fail) {
  * 撒花
  */
 window.confetti = function (e){
-    if(window.event.clientX){
-        confetti({
-            origin: {
-                x: window.event.clientX / window.innerWidth,
-                y: window.event.clientX / window.innerWidth
-            }
-        });
-    }else{
-        confetti({
-            origin: {
-                x: 0.5,
-                y: 0.5
-            }
-        });
-    }
-
+    confetti({
+        origin: {
+            x: 0.5,
+            y: 0.5
+        }
+    });
 }

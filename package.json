@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/trifolium-wang/ip-config-plugin"
+    "url": "https://github.com/tri5m/ip-config-plugin"
   },
   "dependencies": {
     "canvas-confetti": "^1.6.0",

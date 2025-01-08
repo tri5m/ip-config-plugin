@@ -166,7 +166,7 @@
             <td class="des"><span id="net_str1"></span></td>
         </tr>
         <tr>
-            <td class="lab">代理</td>
+            <td class="lab">国外</td>
             <td class="ip">
                 <span id="ip_2">0.0.0.0</span>&nbsp;
                 <span class="copy" onclick="copyIp2()" title="复制"></span>
@@ -358,6 +358,41 @@
     // DNS出口查询
     function dnsExitQuery(){
         document.getElementById("dns_info_cont").innerHTML = "";
+
+        // 从ip.skk.moe的接口拿一些
+        fetch("https://o8wqrg29oc8.ipv4.surfsharkdns.com")
+        .then(response => {
+            console.log(response);
+            if(!response.ok){
+                return;
+            }
+            response.json().then((res) => {
+                Object.keys(json).forEach(ip => {
+                const details = json[ip];
+                let tr = document.createElement("tr");
+                let td1 = document.createElement("td");
+                td1.className = "dic_title";
+                td1.textContent = "DNS out";
+
+                let td2 = document.createElement("td");
+                td2.className = "dic_ip";
+                td2.textContent = ip;
+
+                let td3 = document.createElement("td");
+                td3.className = "dic_geo";
+                td3.textContent = details.Country+" "+details.City + " " + details.ISP;
+
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tr.appendChild(td3);
+
+                document.getElementById("dns_info_cont").appendChild(tr);
+
+            });
+        }).catch(e => {
+            console.error(error);  
+        })
+
         for (let i = 0; i < 4; i++) {
 
             fetch("https://"+generateRandomString(32)+".edns.ip-api.com/json?lang=zh-CN").then(response =>  {
