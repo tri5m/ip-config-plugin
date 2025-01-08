@@ -16,7 +16,7 @@ const confetti = require('canvas-confetti');
  */
 window.lanIPv4 = async function (success) {
     internalIp.v4().then(ip => {
-        if (ip != undefined) {
+        if (ip !== undefined) {
             success(ip);
         } else {
             success(localIpInfer());

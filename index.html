@@ -119,6 +119,13 @@
             color: #6b7280;
         }
 
+        .autoCopyLabel{
+            display: flex;
+            align-items: center;
+            font-size: small;
+            color: darkcyan;
+        }
+
         @media (prefers-color-scheme: dark) {
             .ip {
                 color: #c6c6c6;
@@ -151,8 +158,8 @@
             <td class="ip">
                 <span id="lanIpv4">0.0.0.0</span>&nbsp;
                 <span class="copy" onclick="copyLan()" title="复制"></span></td>
-            <td class="des">已复制到剪贴板</td>
-            <td></td>
+            <td class="des" id="autoCopyTips">点击复制</td>
+            <td><label class="autoCopyLabel"><input id="autoCopy" type="checkbox" onchange="autoCopyCheck(this)"/>自动复制</label></td>
         </tr>
         <tr>
             <td class="lab">公网</td>
@@ -203,10 +210,30 @@
 
     utools.onPluginEnter(({code, type, payload}) => {
 
+        let autoCopy = localStorage.getItem('autoCopy');
+        console.log("自动复制: "+autoCopy);
+        if(autoCopy == null){
+            localStorage.setItem('autoCopy', "true");
+            document.getElementById('autoCopy').checked = true;
+            autoCopy = true;
+        }
+        if (autoCopy=="true") {
+            console.log("???");
+            document.getElementById('autoCopyTips').innerText = '已复制到粘贴板';
+            document.getElementById('autoCopy').checked = true;
+        } else {
+            console.log("###")
+            document.getElementById('autoCopyTips').innerText = '点击复制ip';
+            document.getElementById('autoCopy').checked = false;
+        }
+
         // 获取内网地址
         window.lanIPv4((ip) => {
             document.getElementById("lanIpv4").innerText = ip;
-            utools.copyText(ip);
+            if(autoCopy=="true"){
+                console.log("已自动复制")
+                utools.copyText(ip);
+            }
         });
 
         // 获取地理信息
@@ -284,6 +311,16 @@
         // DNS出口查询
         dnsExitQuery()
     })
+
+    function autoCopyCheck(dom){
+        if(dom.checked){
+            localStorage.setItem('autoCopy', "true")
+            console.log("开启自动复制")
+        }else{
+            localStorage.setItem('autoCopy', "false")
+            console.log("关闭自动复制")
+        }
+    }
 
     function copyLan() {
         utools.copyText(document.getElementById("lanIpv4").innerText)
