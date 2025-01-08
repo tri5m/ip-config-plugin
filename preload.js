@@ -75,19 +75,19 @@ window.wan_no_proxy = function (success, fail) {
             }
             response.json().then(data => {
                 console.log(data)
-                return {
+                success({
                     ip: data.ip,
-                    addr: data.data.country + ' ' + data.data.prov + ' ' + data.data.city + ' ' + data.data.district,
-                    isp: data.data.owner,
+                    addr: data.data.prov + ' ' + data.data.city + ' ' + data.data.district,
+                    isp: data.data.isp,
                     net_str: data.data.owner
-                }
+                })
             }).catch(reason => {
+                console.error(reason);
                 tryFunction();
-                return false;
             });
-        }).catch(data => {
+        }).catch(e => {
+            console.error(e);
             tryFunction();
-            return false;
         });
     }
 
@@ -105,19 +105,19 @@ window.wan_no_proxy = function (success, fail) {
             }
             response.json().then(data => {
                 console.log(data)
-                return {
+                success({
                     ip: data.ip,
                     addr: data.address,
                     isp: data.rs,
                     net_str: data.isDomain
-                }
+                })
             }).catch(reason => {
+                console.error(reason);
                 tryFunction();
-                return false;
             });
-        }).catch(data => {
+        }).catch(e => {
+            console.error(e);
             tryFunction();
-            return false;
         });
     }
 
@@ -135,19 +135,19 @@ window.wan_no_proxy = function (success, fail) {
             }
             response.json().then(data => {
                 console.log(data)
-                return {
+                success({
                     ip: data.ip,
                     addr: data.province + ' ' + data.city + ' ' + data.district,
                     isp: data.isp,
                     net_str: data.short_name
-                }
+                })
             }).catch(reason => {
+                console.error(reason);
                 tryFunction();
-                return false;
             });
-        }).catch(data => {
+        }).catch(e => {
+            console.error(e);
             tryFunction();
-            return false;
         });
     }
 
@@ -162,7 +162,7 @@ window.wan_no_proxy = function (success, fail) {
     }
 
     // 优先级，百度，到ipcn到dns查询
-    fromBaidu(fromIpcn(fromUseragetInfo(fetchFromDns)));
+    fromBaidu(() => fromIpcn(() => fromUseragetInfo(() => fetchFromDns)));
     
 }
 
@@ -186,11 +186,24 @@ window.wan_has_proxy = function (success, fail) {
             }
             response.text().then(data => {
                 console.log(data)
+                let dataLine = data.split(/\r?\n/);
                 success({
-                    ip: data.split('n')[0],
-                    addr: data.split('n')[1],
-                    isp: data.split('n')[2],
-                    net_str: data.split('n')[3]
+                    ip: dataLine[0],
+                    addr: dataLine[1],
+                    isp: dataLine[2],
+                    net_str: dataLine[3]
+                });
+                fetch("https://ipv4.ping0.cc/Ip/ipleakdo?ip="+dataLine).then(response => {
+                    if (response.ok) {
+                        response.json().then(ipTypeRes => {
+                            success({
+                                ip: dataLine[0],
+                                addr: dataLine[1],
+                                isp: dataLine[2] + '['+ipTypeRes.iptype+']',
+                                net_str: dataLine[3]
+                            });
+                        })
+                    }
                 })
             }).catch(reason => {
                 console.error(reason)
@@ -245,7 +258,7 @@ window.wan_has_proxy = function (success, fail) {
     }
 
     // 优先级从外面到里面进行查询
-    fromPing0(fromIpInfo(fetchFromDns()));
+    fromPing0(() => fromIpInfo(() => fetchFromDns()));
 }
 
 /**
