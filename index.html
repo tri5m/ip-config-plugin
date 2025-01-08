@@ -7,8 +7,8 @@
     <style>
         table {
             border-collapse: collapse;
-            width: 90%;
-            margin-left: 5%;
+            width: 95%;
+            margin-left: 3%;
             height: 300px;
             border-radius: 10%;
         }
@@ -19,7 +19,7 @@
         }
 
         tr td {
-            width: 24%;
+            width: 25%;
         }
 
         .cont {
@@ -31,27 +31,25 @@
         }
 
         .ip {
-            width: 20%;
+            width: 15%;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
         }
 
         .ip span {
-            margin-left: 5px;
-        }
-
-        .lab {
-            padding-left: 15px;
-            font-size: large;
-            font-weight: 400;
-            width: 10%;
+            margin-left: 4px;
         }
 
         .lab {
             color: #000000;
+            padding-left: 12px;
+            font-size: large;
+            font-weight: 400;
+            width: 8%;
         }
 
         .des {
             color: cadetblue;
+            font-size: small
         }
 
         .copy {
@@ -284,7 +282,7 @@
         testNetDelay(array);
 
         // DNS出口查询
-        dnsExitQuery();
+        dnsExitQuery()
     })
 
     function copyLan() {
@@ -360,38 +358,38 @@
         document.getElementById("dns_info_cont").innerHTML = "";
 
         // 从ip.skk.moe的接口拿一些
-        fetch("https://o8wqrg29oc8.ipv4.surfsharkdns.com")
-        .then(response => {
+        fetch("https://o8wqrg29oc8.ipv4.surfsharkdns.com").then(response => {
             console.log(response);
             if(!response.ok){
                 return;
             }
-            response.json().then((res) => {
+            response.json().then((json) => {
                 Object.keys(json).forEach(ip => {
-                const details = json[ip];
-                let tr = document.createElement("tr");
-                let td1 = document.createElement("td");
-                td1.className = "dic_title";
-                td1.textContent = "DNS out";
+                    const details = json[ip];
+                    let tr = document.createElement("tr");
+                    let td1 = document.createElement("td");
+                    td1.className = "dic_title";
+                    td1.textContent = "DNS out";
 
-                let td2 = document.createElement("td");
-                td2.className = "dic_ip";
-                td2.textContent = ip;
+                    let td2 = document.createElement("td");
+                    td2.className = "dic_ip";
+                    td2.textContent = ip;
 
-                let td3 = document.createElement("td");
-                td3.className = "dic_geo";
-                td3.textContent = details.Country+" "+details.City + " " + details.ISP;
+                    let td3 = document.createElement("td");
+                    td3.className = "dic_geo";
+                    td3.textContent = details.Country + " " + details.City + " " + details.ISP;
 
-                tr.appendChild(td1);
-                tr.appendChild(td2);
-                tr.appendChild(td3);
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    tr.appendChild(td3);
 
-                document.getElementById("dns_info_cont").appendChild(tr);
+                    document.getElementById("dns_info_cont").appendChild(tr);
+                });
 
             });
         }).catch(e => {
-            console.error(error);  
-        })
+            console.error(e);
+        });
 
         for (let i = 0; i < 4; i++) {
 
