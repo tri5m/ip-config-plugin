@@ -74,12 +74,12 @@ window.wan_no_proxy = function (success, fail) {
                 tryFunction();
             }
             response.json().then(data => {
-                console.log(data)
+                console.log('百度结果：' + data)
                 success({
                     ip: data.ip,
                     addr: data.data.prov + ' ' + data.data.city + ' ' + data.data.district,
                     isp: data.data.isp,
-                    net_str: data.data.owner
+                    net_str: data.data.isp
                 })
             }).catch(reason => {
                 console.error(reason);
@@ -109,7 +109,7 @@ window.wan_no_proxy = function (success, fail) {
                     ip: data.ip,
                     addr: data.address,
                     isp: data.rs,
-                    net_str: data.isDomain
+                    net_str: data.rs
                 })
             }).catch(reason => {
                 console.error(reason);
@@ -139,7 +139,7 @@ window.wan_no_proxy = function (success, fail) {
                     ip: data.ip,
                     addr: data.province + ' ' + data.city + ' ' + data.district,
                     isp: data.isp,
-                    net_str: data.short_name
+                    net_str: data.short_name+','+data.isp
                 })
             }).catch(reason => {
                 console.error(reason);
@@ -193,14 +193,15 @@ window.wan_has_proxy = function (success, fail) {
                     isp: dataLine[2],
                     net_str: dataLine[3]
                 });
-                fetch("https://ipv4.ping0.cc/Ip/ipleakdo?ip="+dataLine).then(response => {
-                    if (response.ok) {
-                        response.json().then(ipTypeRes => {
+                fetch("https://ipv4.ping0.cc/Ip/ipleakdo?ip="+dataLine).then(res => {
+                    if (res.ok) {
+                        res.json().then(ipTypeRes => {
+                            console.log('获取ip类型：'+ipTypeRes.iptype);
                             success({
                                 ip: dataLine[0],
                                 addr: dataLine[1],
-                                isp: dataLine[2] + '['+ipTypeRes.iptype+']',
-                                net_str: dataLine[3]
+                                isp: dataLine[2],
+                                net_str: dataLine[3] + '</br>['+ipTypeRes.iptype+']'
                             });
                         })
                     }
