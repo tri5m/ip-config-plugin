@@ -201,7 +201,7 @@ window.wan_has_proxy = function (success, fail) {
                                 ip: dataLine[0],
                                 addr: dataLine[1],
                                 isp: dataLine[2],
-                                net_str: dataLine[3] + '</br>['+ipTypeRes.iptype+']'
+                                net_str: dataLine[3] + '\r\n['+ipTypeRes.iptype+']'
                             });
                         })
                     }
