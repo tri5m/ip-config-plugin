@@ -5,7 +5,13 @@ mkdir -p ./out
 for file in *
 do
     if [[ ! " $exclude_list " =~ " $file " ]]; then
-        cp -r "$file" ./out
+        rsync -a \
+            --exclude "*.map" \
+            --exclude "*.js.gz" \
+            --exclude "*.css.gz" \
+            --exclude "*.debug.js" \
+            --exclude "*.debug.css" \
+            "$file" ./out
     fi
 done
 echo "build success"

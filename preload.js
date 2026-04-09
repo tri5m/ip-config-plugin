@@ -2,8 +2,6 @@ const os = require("os");
 const publicIp = require('public-ip');
 const internalIp = require('internal-ip');
 
-const interfaces = os.networkInterfaces();
-
 const {Navigator} = require("node-navigator");
 const mode_navigator = new Navigator();
 
@@ -11,47 +9,145 @@ const mode_navigator = new Navigator();
 const confetti = require('canvas-confetti');
 
 /**
- * 获取局域网ip地址，如果获取不到就从本地网卡进行推断
- * @param success success(ip)
+ * 获取全部可用IPv4网卡，按优先级排序
  */
-window.lanIPv4 = async function (success) {
-    internalIp.v4().then(ip => {
-        if (ip !== undefined) {
-            success(ip);
-        } else {
-            success(localIpInfer());
-        }
-    }).catch(err => success(localIpInfer()));
+window.getLanIPv4Interfaces = function (success) {
+    success(listLanIPv4Interfaces());
 }
 
 /**
- * 尝试从本地网卡信息推断局域网ip
+ * 获取局域网IPv4地址
+ * @param success success(ip)
+ * @param preferredInterfaceId 指定网卡ID，可选
  */
-function localIpInfer() {
-    console.log("本地推断!")
-    let lanIpv4 = '';
-    if (utools.isMacOs()) {
-        if (interfaces.en0 != undefined) {
-            for (let i = 0; i < interfaces.en0.length; i++) {
-                if (interfaces.en0[i].family == 'IPv4') {
-                    lanIpv4 = interfaces.en0[i].address;
-                }
-            }
-        } else {
-            lanIpv4 = "无连接网络!"
+window.lanIPv4 = async function (success, preferredInterfaceId) {
+    const lanInterfaces = listLanIPv4Interfaces();
+    const preferred = pickPreferredLanInterface(lanInterfaces, preferredInterfaceId);
+
+    if (preferredInterfaceId) {
+        success(preferred ? preferred.address : '');
+        return;
+    }
+
+    internalIp.v4().then(ip => {
+        if (ip) {
+            success(ip);
+            return;
         }
-    } else if (utools.isWindows()) {
-        for (let devName in interfaces) {
-            let iface = interfaces[devName];
-            for (let i = 0; i < iface.length; i++) {
-                let alias = iface[i];
-                if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-                    lanIpv4 = alias.address;
-                }
+        success(preferred ? preferred.address : '');
+    }).catch(() => {
+        success(preferred ? preferred.address : '');
+    });
+}
+
+function listLanIPv4Interfaces() {
+    const interfaces = os.networkInterfaces();
+    const result = [];
+
+    Object.keys(interfaces).forEach((name) => {
+        const iface = interfaces[name] || [];
+        iface.forEach((item) => {
+            const family = normalizeFamily(item.family);
+            if (family !== 'IPv4') {
+                return;
             }
+            if (item.internal || !item.address) {
+                return;
+            }
+            if (item.address === '127.0.0.1' || item.address.startsWith('169.254.')) {
+                return;
+            }
+
+            result.push({
+                id: buildLanInterfaceId(name, item.address),
+                name,
+                address: item.address,
+                cidr: item.cidr || '',
+                mac: item.mac || '',
+                score: scoreLanInterface(name, item.address)
+            });
+        });
+    });
+
+    result.sort((a, b) => {
+        if (b.score !== a.score) {
+            return b.score - a.score;
+        }
+        if (a.name !== b.name) {
+            return a.name.localeCompare(b.name);
+        }
+        return a.address.localeCompare(b.address);
+    });
+
+    return result.map(({score, ...item}) => item);
+}
+
+function pickPreferredLanInterface(interfaces, preferredInterfaceId) {
+    if (!interfaces.length) {
+        return null;
+    }
+
+    if (preferredInterfaceId) {
+        const matched = interfaces.find(item => item.id === preferredInterfaceId);
+        if (matched) {
+            return matched;
         }
     }
-    return lanIpv4;
+
+    return interfaces[0];
+}
+
+function normalizeFamily(family) {
+    if (family === 4) {
+        return 'IPv4';
+    }
+    if (family === 6) {
+        return 'IPv6';
+    }
+    return family;
+}
+
+function buildLanInterfaceId(name, address) {
+    return name + '::' + address;
+}
+
+function scoreLanInterface(name, address) {
+    let score = 0;
+    const lowerName = String(name).toLowerCase();
+
+    if (
+        lowerName.includes('wi-fi') ||
+        lowerName.includes('wifi') ||
+        lowerName.includes('wlan') ||
+        lowerName === 'en0' ||
+        lowerName.startsWith('eth')
+    ) {
+        score += 50;
+    }
+
+    if (
+        lowerName.includes('bridge') ||
+        lowerName.includes('docker') ||
+        lowerName.includes('vbox') ||
+        lowerName.includes('vmnet') ||
+        lowerName.includes('hyper-v') ||
+        lowerName.includes('virtual') ||
+        lowerName.includes('utun') ||
+        lowerName.includes('tun') ||
+        lowerName.includes('tap')
+    ) {
+        score -= 100;
+    }
+
+    if (address.startsWith('192.168.')) {
+        score += 20;
+    } else if (address.startsWith('10.')) {
+        score += 15;
+    } else if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(address)) {
+        score += 10;
+    }
+
+    return score;
 }
 
 /**
@@ -173,7 +269,7 @@ window.wan_has_proxy = function (success, fail) {
                 tryFunction();
             }
             response.text().then(data => {
-                console.log(data)
+                console.log("ping0获取结果:"+data)
                 let dataLine = data.split(/\r?\n/);
                 success({
                     ip: dataLine[0],
@@ -181,12 +277,12 @@ window.wan_has_proxy = function (success, fail) {
                     isp: dataLine[2],
                     net_str: dataLine[3]
                 });
-                fetch("https://ipv4.ping0.cc/Ip/ipleakdo?ip="+dataLine).then(res => {
+                fetch("https://ipv4.ping0.cc/Ip/ipleakdo").then(res => {
                     if (res.ok) {
                         res.json().then(ipTypeRes => {
                             console.log('获取ip类型：'+ipTypeRes.iptype);
                             success({
-                                ip: dataLine[0],
+                                ip: ipTypeRes.ip,
                                 addr: dataLine[1],
                                 isp: dataLine[2],
                                 net_str: dataLine[3] + '\r\n['+ipTypeRes.iptype+']'
@@ -220,14 +316,14 @@ window.wan_has_proxy = function (success, fail) {
                 tryFunction();
             }
             response.json().then(data => {
-                console.log(data)
-                return {
+                console.log("pgeolocation.io结果:" + JSON.stringify(data))
+                success({
                     ip: data.ip,
                     addr: data.country_emoji+data.country_name+ ' ' + data.state_prov + ' '
                         + data.city + ' ' + data.district,
                     isp: data.isp,
                     net_str: data.organization
-                }
+                });
             }).catch(reason => {
                 tryFunction();
                 return false;
@@ -253,13 +349,13 @@ window.wan_has_proxy = function (success, fail) {
                 tryFunction();
             }
             response.json().then(data => {
-                console.log(data)
-                return {
+                console.log("ipinfo.io结果:"+data);
+                success({
                     ip: data.ip,
                     addr: data.country + ' ' + data.region + ' ' + data.city,
                     isp: data.org,
                     net_str: data.org
-                }
+                })
             }).catch(reason => {
                 tryFunction();
                 return false;
@@ -285,13 +381,13 @@ window.wan_has_proxy = function (success, fail) {
                 tryFunction();
             }
             response.json().then(data => {
-                console.log(data)
-                return {
+                console.log("Ipify结果:"+ data);
+                success({
                     ip: data.ip,
                     addr: "",
                     isp: "",
                     net_str: ""
-                }
+                })
             }).catch(reason => {
                 tryFunction();
                 return false;
@@ -313,7 +409,7 @@ window.wan_has_proxy = function (success, fail) {
     }
 
     // 优先级从外面到里面进行查询
-    fromPing0(() => fromIpgeolocation(() => fromIpInfo(
+    fromIpgeolocation(() => fromPing0(() => fromIpInfo(
         () => fromIpify(() => fetchFromDns()))));
 }
 
@@ -328,8 +424,10 @@ window.locationInfo = function (success, fail) {
     // 其他，美团，根据经纬度查地址 https://apimobile.meituan.com/group/v1/city/latlng/31.178655,121.401438?tag=0
 
     let fromBaidu = (latitude, longitude, tryFunction) => {
+
+        const [lng, lat] = wgs84ToBd09(longitude,latitude);
         let url = "http://api.map.baidu.com/geocoder?location="
-            + latitude + "," + longitude + "&output=json";
+            + lat + "," + lng + "&output=json";
         fetch(url).then(response => {
             if (response.ok) {
                 response.json().then(bodyObj => {
@@ -353,14 +451,18 @@ window.locationInfo = function (success, fail) {
 
     // 从我的高德key接口中查询
     let fromMyGaodeKey = (latitude, longitude, tryFunction) => {
+
+        // 做转换
+        const [gcjLng, gcjLat] = wgs84ToGcj02(longitude, latitude);
+        console.info("高德地图转换后的经纬度: " + gcjLng + "," + gcjLat);
         let url = "https://restapi.amap.com/v3/geocode/regeo?key=c58d08114ec1edd8e5e60242824bd202&" +
-            "location=" + longitude + "," + latitude;
+            "location=" + gcjLng + "," + gcjLat;
         console.info("从高德地图开始根据经纬度获取地址latitude:"+latitude + "longitude:"+longitude)
         fetch(url).then(response => {
             if (response.ok) {
                 response.json().then(bodyObj => {
                     console.log("从高德地图开始根据经纬度获取地址: "+ bodyObj)
-                    if(bodyObj.status === 1){
+                    if(bodyObj.status === "1"){
                         success(bodyObj.regeocode.formatted_address);
                     }else{
                         tryFunction(latitude, longitude, tryFunction);
@@ -376,8 +478,9 @@ window.locationInfo = function (success, fail) {
     }
 
     let fromMeiTuan = (latitude, longitude, tryFunction) => {
+        const [gcjLng, gcjLat] = wgs84ToGcj02(longitude,latitude);
         let url = "https://apimobile.meituan.com/group/v1/city/latlng/"
-            + latitude + "," + longitude + "?tag=0";
+            + gcjLat + "," + gcjLng + "?tag=0";
         fetch(url).then(response => {
             if (response.ok) {
                 response.json().then(bodyObj => {
@@ -412,25 +515,117 @@ window.locationInfo = function (success, fail) {
     }
     // 同样的还有 https://ip-moe.zerodream.net/?ip=180.154.13.158 用ip来查询地址
 
-    if (mode_navigator.geolocation) {
-        // 从操作系统获取用户位置信息
-        mode_navigator.geolocation.getCurrentPosition((loc, error) => {
-            if (error) {
-                // 获取不到经纬度，直接从高德获取
+
+    const userNodeNavigator = function () {
+        console.log("使用mode_navigator.geolocation")
+        mode_navigator.geolocation.getCurrentPosition(
+            (loc, error) => {
+                if(error || !loc){
+                    // 获取不到经纬度，直接从高德获取
+                    console.error(error);
+                    fromGaodeIp("","", () => fail("无法获取地址信息"));
+                    return;
+                }
+                const { latitude, longitude} = loc;
+                fromMyGaodeKey(latitude,longitude,
+                    () => fromBaidu(latitude, longitude,
+                        () => fromMeiTuan(latitude, longitude,
+                            () => fromGaodeIp("","",
+                                () => fail("无法获取地址信息")))));
+
+            });
+    }
+    if (navigator.geolocation) {
+        console.log("使用navigator.geolocation")
+        navigator.geolocation.getCurrentPosition(
+            (loc) => {
+                const { latitude, longitude} = loc.coords;
+                fromMyGaodeKey(latitude,longitude,
+                    () => fromBaidu(latitude, longitude,
+                        () => fromMeiTuan(latitude, longitude,
+                            () => fromGaodeIp("","",
+                                () => fail("无法获取地址信息")))));
+            },
+            (error) => {
                 console.error(error);
-                fromGaodeIp("","", () => fail("无法获取地址信息"));
-            } else {
-                fromMyGaodeKey(loc.latitude,loc.longitude,
-                    () => fromBaidu(loc.latitude, loc.longitude,
-                    () => fromMeiTuan(loc.latitude, loc.longitude,
-                    () => fromGaodeIp("","",
-                        () => fail("无法获取地址信息")))));
+                userNodeNavigator();
             }
-        });
+        );
+    } else if (mode_navigator.geolocation) {
+        userNodeNavigator();
     } else {
         console.error("不支持定位");
         fromGaodeIp("","", () => fail("无法获取地址信息"));
     }
+}
+
+// 百度地图要用
+function wgs84ToBd09(lng, lat) {
+    const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
+    return gcj02ToBd09(gcjLng, gcjLat);
+}
+
+function gcj02ToBd09(lng, lat) {
+    const x = lng, y = lat;
+    const z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * Math.PI);
+    const theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * Math.PI);
+    const bdLng = z * Math.cos(theta) + 0.0065;
+    const bdLat = z * Math.sin(theta) + 0.006;
+    return [bdLng, bdLat];
+}
+
+// 经纬度坐标系转换，高德和美团要用
+function wgs84ToGcj02(lng, lat) {
+    const a = 6378245.0;
+    const ee = 0.00669342162296594323;
+
+    function transformLat(x, y) {
+        let ret = -100 + 2 * x + 3 * y + 0.2 * y * y +
+            0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+        ret += (20 * Math.sin(6 * x * Math.PI) +
+            20 * Math.sin(2 * x * Math.PI)) * 2 / 3;
+        ret += (20 * Math.sin(y * Math.PI) +
+            40 * Math.sin(y / 3 * Math.PI)) * 2 / 3;
+        ret += (160 * Math.sin(y / 12 * Math.PI) +
+            320 * Math.sin(y * Math.PI / 30)) * 2 / 3;
+        return ret;
+    }
+
+    function transformLng(x, y) {
+        let ret = 300 + x + 2 * y + 0.1 * x * x +
+            0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+        ret += (20 * Math.sin(6 * x * Math.PI) +
+            20 * Math.sin(2 * x * Math.PI)) * 2 / 3;
+        ret += (20 * Math.sin(x * Math.PI) +
+            40 * Math.sin(x / 3 * Math.PI)) * 2 / 3;
+        ret += (150 * Math.sin(x / 12 * Math.PI) +
+            300 * Math.sin(x / 30 * Math.PI)) * 2 / 3;
+        return ret;
+    }
+
+    function outOfChina(lng, lat) {
+        return lng < 72.004 || lng > 137.8347 ||
+            lat < 0.8293 || lat > 55.8271;
+    }
+
+    // 中国境外不转换
+    if (outOfChina(lng, lat)) {
+        return [lng, lat];
+    }
+
+    let dLat = transformLat(lng - 105, lat - 35);
+    let dLng = transformLng(lng - 105, lat - 35);
+
+    const radLat = lat / 180 * Math.PI;
+    let magic = Math.sin(radLat);
+    magic = 1 - ee * magic * magic;
+
+    const sqrtMagic = Math.sqrt(magic);
+
+    dLat = (dLat * 180) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+    dLng = (dLng * 180) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+
+    return [lng + dLng, lat + dLat];
 }
 
 /**
